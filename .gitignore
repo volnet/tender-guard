@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.work/
+*.tenderlens.json
+tests-output/
+tests/**/*.db
+tests/**/*.sqlite*
+tests/**/*-cleaned.*
+tests/**/*.report.*
+coverage/
+*.log
+.DS_Store

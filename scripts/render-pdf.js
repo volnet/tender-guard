@@ -1,0 +1,3 @@
+'use strict';
+const {app,BrowserWindow}=require('electron');const fs=require('fs').promises;const path=require('path');
+app.whenReady().then(async()=>{const input=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]);const w=new BrowserWindow({show:false,webPreferences:{sandbox:true}});await w.loadFile(input);const data=await w.webContents.printToPDF({printBackground:true,pageSize:'A4',margins:{top:.5,bottom:.5,left:.45,right:.45}});await fs.mkdir(path.dirname(output),{recursive:true});await fs.writeFile(output,data);w.destroy();app.quit();}).catch(e=>{console.error(e);app.exit(1)});

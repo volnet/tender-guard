@@ -1,0 +1,35 @@
+{
+  "name": "tender-lens",
+  "version": "1.1.0",
+  "description": "Offline tender document correlation detector",
+  "main": "src/main.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test",
+    "analyze": "node src/cli.js",
+    "dist:win": "electron-builder --win nsis",
+    "dist:mac": "electron-builder --mac dmg zip"
+  },
+  "dependencies": {
+    "exceljs": "4.4.0",
+    "fast-xml-parser": "5.2.5",
+    "pdf-lib": "1.17.1",
+    "yazl": "3.3.1",
+    "yauzl": "3.2.0"
+  },
+  "devDependencies": {
+    "electron": "37.2.3",
+    "electron-builder": "26.0.12"
+  },
+  "build": {
+    "appId": "com.tenderlens.desktop",
+    "productName": "投标慧眼",
+    "asar": true,
+    "files": ["src/**/*", "package.json", "README.md", "LICENSES.md"],
+    "directories": { "output": "dist" },
+    "win": { "target": "nsis", "artifactName": "TenderLens-${version}-Setup.${ext}" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true },
+    "mac": { "target": ["dmg", "zip"], "category": "public.app-category.business", "artifactName": "TenderLens-${version}-${arch}.${ext}" }
+  }
+}
