@@ -1,5 +1,5 @@
 {
-  "name": "tender-lens",
+  "name": "toubiao-huiyan",
   "version": "1.1.0",
   "description": "Offline tender document correlation detector",
   "main": "src/main.js",
@@ -23,13 +23,13 @@
     "electron-builder": "26.0.12"
   },
   "build": {
-    "appId": "com.tenderlens.desktop",
+    "appId": "com.toubiaohuiyan.desktop",
     "productName": "投标慧眼",
     "asar": true,
     "files": ["src/**/*", "package.json", "README.md", "LICENSES.md"],
     "directories": { "output": "dist" },
-    "win": { "target": "nsis", "artifactName": "TenderLens-${version}-Setup.${ext}" },
+    "win": { "target": "nsis", "artifactName": "投标慧眼-${version}-安装程序.${ext}", "signAndEditExecutable": false },
     "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true },
-    "mac": { "target": ["dmg", "zip"], "category": "public.app-category.business", "artifactName": "TenderLens-${version}-${arch}.${ext}" }
+    "mac": { "target": ["dmg", "zip"], "category": "public.app-category.business", "artifactName": "投标慧眼-${version}-${arch}.${ext}" }
   }
 }

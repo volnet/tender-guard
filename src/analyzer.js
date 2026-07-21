@@ -6,6 +6,7 @@ const path = require('path');
 const crypto = require('crypto');
 const yauzl = require('yauzl');
 const { XMLParser } = require('fast-xml-parser');
+const { PDFDocument, PDFArray, PDFRawStream, PDFName, PDFDict, decodePDFRawStream } = require('pdf-lib');
 
 const LIMITS = Object.freeze({ entries: 20000, total: 2 * 1024 ** 3, single: 512 * 1024 ** 2, ratio: 200, depth: 3 });
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_', parseTagValue: false });
@@ -13,6 +14,7 @@ const sha = b => crypto.createHash('sha256').update(b).digest('hex');
 const arr = x => x == null ? [] : Array.isArray(x) ? x : [x];
 const text = x => x == null ? '' : typeof x === 'object' ? (x['#text'] || '') : String(x);
 const normalize = v => String(v || '').normalize('NFKC').trim().replace(/\\/g, '/').replace(/\s+/g, ' ').toLowerCase();
+const formatBytes=n=>{const value=Number(n)||0;if(value<1024)return `${value} B`;if(value<1024**2)return `${(value/1024).toFixed(1)} KB`;if(value<1024**3)return `${(value/1024**2).toFixed(1)} MB`;return `${(value/1024**3).toFixed(1)} GB`;};
 
 function classify(name, b) {
   const ext = path.extname(name).toLowerCase();
@@ -66,13 +68,13 @@ async function zipBuffers(file, wanted) {
 function coreProps(xml) {
   if (!xml) return {}; let o; try{o=parser.parse(xml.toString('utf8'));}catch{return {};}
   const c=o['cp:coreProperties']||{}, a=o.Properties||{};
-  return { author:text(c['dc:creator']||a.Company), lastEditor:text(c['cp:lastModifiedBy']||a.Manager), title:text(c['dc:title']), subject:text(c['dc:subject']), keywords:text(c['cp:keywords']), description:text(c['dc:description']), created:text((c['dcterms:created']||{})['#text']||c['dcterms:created']), modified:text((c['dcterms:modified']||{})['#text']||c['dcterms:modified']), lastPrinted:text(c['cp:lastPrinted']), company:text(a.Company), manager:text(a.Manager), application:text(a.Application), appVersion:text(a.AppVersion), version:text(c['cp:version']||a.AppVersion), template:text(a.Template), totalEditingTime:text(c['cp:totalTime']), revision:text(c['cp:revision'])};
+  return { author:text(c['dc:creator']||a.Company), lastEditor:text(c['cp:lastModifiedBy']||a.Manager), title:text(c['dc:title']), subject:text(c['dc:subject']), keywords:text(c['cp:keywords']), description:text(c['dc:description']), created:text((c['dcterms:created']||{})['#text']||c['dcterms:created']), modified:text((c['dcterms:modified']||{})['#text']||c['dcterms:modified']), lastPrinted:text(c['cp:lastPrinted']), company:text(a.Company), manager:text(a.Manager), application:text(a.Application), appVersion:text(a.AppVersion), version:text(c['cp:version']||a.AppVersion), template:text(a.Template), totalEditingTime:text(a.TotalTime||c['cp:totalTime']), revision:text(c['cp:revision'])};
 }
 async function officeExtract(buffer, kind) {
   const tmp=path.join(require('os').tmpdir(),`tl-${crypto.randomUUID()}.zip`); await fsp.writeFile(tmp,buffer);
   try {
     const names = await listZip(tmp); const wanted=n => /^(docProps\/(core|app|custom)\.xml|word\/(document|comments|settings)\.xml|word\/_rels\/document\.xml\.rels|xl\/(workbook|styles|comments\d*)\.xml|xl\/worksheets\/sheet\d+\.xml|xl\/_rels\/workbook\.xml\.rels|ppt\/presentation\.xml|ppt\/slides\/slide\d+\.xml|.*\/media\/.*)$/i.test(n);
-    const m=await zipBuffers(tmp,wanted); const props={...coreProps(m.get('docProps/core.xml')),...coreProps(m.get('docProps/app.xml'))};
+    const m=await zipBuffers(tmp,wanted),core=coreProps(m.get('docProps/core.xml')),app=coreProps(m.get('docProps/app.xml'));const props={...core,...Object.fromEntries(Object.entries(app).filter(([,v])=>v!==''&&v!=null))};
     const custom=m.get('docProps/custom.xml'); if(custom&&/<property\b/i.test(custom.toString('utf8'))) props.customProperties=sha(custom);
     const all=[...m.entries()]; props.internalStructureHash=sha(Buffer.from(names.entries.map(e=>e.fileName).join('\n')));
     props.mediaHashes=all.filter(([n])=>/\/media\//.test(n)).map(([,b])=>sha(b));
@@ -87,13 +89,34 @@ async function officeExtract(buffer, kind) {
     const body=xmlText.replace(/<[^>]+>/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim(); props.textSample=body.slice(0,200000); props.textFingerprint=simhash(body); return props;
   } finally { await fsp.rm(tmp,{force:true}); }
 }
-function pdfExtract(b) { const s=b.toString('latin1'); const pick=k=>{const m=s.match(new RegExp('/'+k+'\\s*\\(([^)]{0,500})\\)'));return m?.[1]||''}; return {author:pick('Author'),creator:pick('Creator'),producer:pick('Producer'),title:pick('Title'),created:pick('CreationDate'),modified:pick('ModDate'),documentIds:(s.match(/<([0-9A-F]{16,64})>/ig)||[]).map(x=>x.slice(1,-1)).slice(0,10),pdfVersion:(s.match(/^%PDF-([^\r\n]+)/)||[])[1]||'',hasJavaScript:/\/JavaScript|\/JS\b/.test(s),hasSignature:/\/Type\s*\/Sig\b/.test(s),encrypted:/\/Encrypt\b/.test(s),pageCount:(s.match(/\/Type\s*\/Page\b/g)||[]).length,textFingerprint:simhash(s.replace(/[^\x20-\x7e\u4e00-\u9fff]+/g,' '))}; }
+function pdfPageContent(page, context) {
+  const read=obj=>{const value=context.lookup(obj);if(value instanceof PDFArray){let out='';for(let i=0;i<value.size();i++)out+=read(value.get(i));return out;}if(value instanceof PDFRawStream){try{return Buffer.from(decodePDFRawStream(value).decode()).toString('latin1');}catch{return Buffer.from(value.getContents()).toString('latin1');}}return value?.getContents?Buffer.from(value.getContents()).toString('latin1'):'';};
+  try{return read(page.node.Contents());}catch{return '';}
+}
+function pdfPageHasImage(page, context) {
+  try{const resources=page.node.Resources(),objects=resources?.lookupMaybe(PDFName.of('XObject'),PDFDict);if(!objects)return false;return objects.entries().some(([,ref])=>{const value=context.lookup(ref);return value?.dict?.get(PDFName.of('Subtype'))?.toString()==='/Image';});}catch{return false;}
+}
+const decodeXml=s=>String(s||'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');
+function pdfXmpMetadata(doc){
+  try{const ref=doc.catalog.get(PDFName.of('Metadata')),stream=doc.context.lookup(ref);if(!(stream instanceof PDFRawStream))return {present:false};const xml=Buffer.from(decodePDFRawStream(stream).decode()).toString('utf8'),simple=tag=>decodeXml((xml.match(new RegExp(`<${tag}\\b[^>]*>([\\s\\S]*?)<\\/${tag}>`,'i'))||[])[1]?.replace(/<[^>]+>/g,' ').trim()||''),list=tag=>decodeXml((xml.match(new RegExp(`<${tag}\\b[^>]*>[\\s\\S]*?<rdf:li\\b[^>]*>([\\s\\S]*?)<\\/rdf:li>[\\s\\S]*?<\\/${tag}>`,'i'))||[])[1]?.replace(/<[^>]+>/g,' ').trim()||'');return {present:true,creator:simple('xmp:CreatorTool'),producer:simple('pdf:Producer'),author:list('dc:creator'),title:list('dc:title'),subject:list('dc:description'),keywords:simple('pdf:Keywords'),created:simple('xmp:CreateDate'),modified:simple('xmp:ModifyDate'),trapped:simple('pdf:Trapped'),metadataDate:simple('xmp:MetadataDate')};}catch{return {present:false,parseError:'XMP Metadata 无法解析'};}
+}
+async function pdfExtract(b) {
+  const raw=b.toString('latin1'), header=(raw.match(/^%PDF-([^\r\n]+)/)||[])[1]||'';
+  const result={documentIds:(raw.match(/<([0-9A-F]{16,64})>/ig)||[]).map(x=>x.slice(1,-1)).slice(0,10),pdfVersion:header?`PDF-${header}`:'',hasJavaScript:/\/JavaScript|\/JS\b/.test(raw),hasSignature:/\/Type\s*\/Sig\b/.test(raw),encrypted:/\/Encrypt\b/.test(raw)};
+  const doc=await PDFDocument.load(b,{ignoreEncryption:true,updateMetadata:false,throwOnInvalidObject:false});
+  const iso=d=>d instanceof Date&&!Number.isNaN(d.valueOf())?d.toISOString():'';
+  const info=doc.context.trailerInfo.Info?doc.context.lookup(doc.context.trailerInfo.Info,PDFDict):undefined,trapped=info?.get(PDFName.of('Trapped'))?.toString().replace(/^\//,'')||'';
+  Object.assign(result,{author:doc.getAuthor()||'',creator:doc.getCreator()||'',producer:doc.getProducer()||'',title:doc.getTitle()||'',subject:doc.getSubject()||'',keywords:doc.getKeywords()||'',created:iso(doc.getCreationDate()),modified:iso(doc.getModificationDate()),trapped,pageCount:doc.getPageCount(),xmp:pdfXmpMetadata(doc)});
+  const pages=doc.getPages(),contents=pages.map(p=>pdfPageContent(p,doc.context)),hasText=contents.some(x=>/\bBT\b/.test(x)),hasImage=pages.some(p=>pdfPageHasImage(p,doc.context));
+  result.scannedDocument=pages.length?(hasImage&&!hasText?'是':'否'):'无法判断';result.textFingerprint=simhash(contents.join(' '));return result;
+}
 function propertyGroups(f) {
   const a=f.attributes||{}; const useful=o=>Object.fromEntries(Object.entries(o).filter(([,v])=>v!==''&&v!=null&&(!Array.isArray(v)||v.length)));
   const office=['word','excel','powerpoint'].includes(f.kind), missing=v=>v===''||v==null?'未提取到':v;
   return [
-    {id:'common',title:'常见文件属性',open:true,items:{文件名:f.name,'ZIP 内路径':f.zipPath,文件类型:f.kind,MIME:f.mime,扩展名:f.extension,文件大小:f.size,'SHA-256':f.sha256,...(office?{作者:missing(a.author),'最后一次保存者':missing(a.lastEditor),修订号:missing(a.revision),版本号:missing(a.version||a.appVersion),程序名称:missing(a.application),公司:missing(a.company),管理者:missing(a.manager),'创建内容的时间':missing(a.created),'最后一次保存的日期':missing(a.modified)}:useful({作者:a.author,'最后一次保存者':a.lastEditor,'创建内容的时间':a.created,'最后一次保存的日期':a.modified,程序名称:a.application,版本号:a.version||a.appVersion,公司:a.company,管理者:a.manager}))}},
-    {id:'document',title:f.kind==='pdf'?'PDF 文档属性':f.kind==='excel'?'Excel 专有属性':f.kind==='word'?'Word 专有属性':f.kind==='powerpoint'?'PowerPoint 专有属性':'文档专有属性',open:true,items:useful({标题:a.title,主题:a.subject,关键词:a.keywords,说明:a.description,模板:a.template,总编辑时间:a.totalEditingTime,'PDF 版本':a.pdfVersion,页数:a.pageCount,文档ID:a.documentIds,工作表:a.sheets})},
+    {id:'common',title:'常见文件属性',open:true,items:{文件名:f.name,'ZIP 内路径':f.zipPath,文件类型:f.kind,MIME:f.mime,扩展名:f.extension,文件大小:formatBytes(f.size),'SHA-256':f.sha256,...(office?{作者:missing(a.author),'最后一次保存者':missing(a.lastEditor),修订号:missing(a.revision),版本号:missing(a.version||a.appVersion),程序名称:missing(a.application),公司:missing(a.company),管理者:missing(a.manager),'创建内容的时间':missing(a.created),'最后一次保存的日期':missing(a.modified)}:f.kind==='pdf'?{}:useful({作者:a.author,'最后一次保存者':a.lastEditor,'创建内容的时间':a.created,'最后一次保存的日期':a.modified,程序名称:a.application,版本号:a.version||a.appVersion,公司:a.company,管理者:a.manager}))}},
+    {id:'pdf-metadata',title:'说明',open:true,xmpStatus:a.xmp?.present?'已读取':a.xmp?.parseError||'不存在',items:f.kind==='pdf'?{作者:{field:'author',info:missing(a.author),xmp:missing(a.xmp?.author)},标题:{field:'title',info:missing(a.title),xmp:missing(a.xmp?.title)},主题:{field:'subject',info:missing(a.subject),xmp:missing(a.xmp?.subject)},关键词:{field:'keywords',info:missing(a.keywords),xmp:missing(a.xmp?.keywords)},'创建程序':{field:'creator',info:missing(a.creator),xmp:missing(a.xmp?.creator)},'制作工具':{field:'producer',info:missing(a.producer),xmp:missing(a.xmp?.producer)},'创建时间':{field:'created',info:missing(a.created),xmp:missing(a.xmp?.created)},'修改时间':{field:'modified',info:missing(a.modified),xmp:missing(a.xmp?.modified)},'陷印状态':{field:'trapped',info:missing(a.trapped),xmp:missing(a.xmp?.trapped)},'元数据时间':{field:'metadataDate',info:'不适用',xmp:missing(a.xmp?.metadataDate),infoReadOnly:true}}:{}},
+    {id:'document',title:f.kind==='pdf'?'PDF 文件结构':f.kind==='excel'?'Excel 专有属性':f.kind==='word'?'Word 专有属性':f.kind==='powerpoint'?'PowerPoint 专有属性':'文档专有属性',open:true,items:useful({模板:a.template,总编辑时间:a.totalEditingTime?`${a.totalEditingTime} 分钟`:'','PDF 版本':a.pdfVersion,'扫描件文档':a.scannedDocument,页数:a.pageCount,文档ID:a.documentIds,工作表:a.sheets})},
     {id:'fingerprint',title:'内容指纹与相似度',items:useful({'SimHash':a.textFingerprint,媒体文件哈希:a.mediaHashes,内部结构哈希:a.internalStructureHash,自定义属性哈希:a.customProperties})},
     {id:'paths',title:'链接、路径与嵌入内容',items:useful({本地路径:a.localPaths,外部链接:a.externalLinks,包含宏:a.hasMacros,包含PDF脚本:a.hasJavaScript,包含签名:a.hasSignature,已加密:a.encrypted})},
     {id:'integrity',title:'格式与解析状态',items:useful({扩展名不一致:f.extensionMismatch,解析错误:f.parseError})}
@@ -102,7 +125,7 @@ function propertyGroups(f) {
 
 async function analyzeBuffer(b,name,origin={}) {
   const [mime,kind]=classify(name,b); const f={name:path.basename(name),zipPath:origin.entryPath||name,sourcePath:origin.sourcePath||'',size:b.length,sha256:sha(b),mime,kind,extension:path.extname(name).toLowerCase(),extensionMismatch:false,attributes:{}};
-  try{if(['word','excel','powerpoint'].includes(kind))f.attributes=await officeExtract(b,kind);else if(kind==='pdf')f.attributes=pdfExtract(b);else if(kind==='image')f.attributes={imageHash:f.sha256};else if(kind==='text'){const t=b.toString('utf8').slice(0,200000);f.attributes={textFingerprint:simhash(t),textSample:t};}}catch(x){f.parseError=x.message;} f.propertyGroups=propertyGroups(f); return f;
+  try{if(['word','excel','powerpoint'].includes(kind))f.attributes=await officeExtract(b,kind);else if(kind==='pdf')f.attributes=await pdfExtract(b);else if(kind==='image')f.attributes={imageHash:f.sha256};else if(kind==='text'){const t=b.toString('utf8').slice(0,200000);f.attributes={textFingerprint:simhash(t),textSample:t};}}catch(x){f.parseError=x.message;} f.propertyGroups=propertyGroups(f); return f;
 }
 
 async function analyzeFiles(filePaths,options={}) {const files=[];for(let i=0;i<filePaths.length;i++){const p=path.resolve(filePaths[i]),b=await fsp.readFile(p);const f=await analyzeBuffer(b,path.basename(p),{sourcePath:p});f.supplier='单文件检查';files.push(f);options.progress?.({done:i+1,total:filePaths.length,name:path.basename(p)});}return {schemaVersion:2,appVersion:'1.1.0',id:crypto.randomUUID(),name:'单文件检查',mode:'files',createdAt:new Date().toISOString(),submissions:[{id:crypto.randomUUID(),supplier:'单文件检查',zipName:'本地文件',zipPath:'',fileCount:files.length,totalSize:files.reduce((n,f)=>n+f.size,0),files}],findings:[],disclaimer:'单文件属性检查仅展示可提取信息；清理操作始终生成新副本。'};}

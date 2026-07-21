@@ -1,56 +1,91 @@
-# 投标慧眼 TenderLens
+# 投标慧眼
 
-一款默认离线、原件只读的桌面投标文件异常关联检测工具。它批量读取每家供应商的 ZIP，保留文件路径、原始属性值、SHA-256 和判断依据，输出“异常关联 / 同源风险 / 建议人工复核”，不会输出串标或法律结论。
+投标慧眼是一款默认离线运行的桌面投标文件属性与异常关联检测工具。它可以批量检查不同供应商提交的 ZIP，也可以直接检查单个 Office、PDF、图片或文本文件。
 
-## 运行
+检测结果用于提供人工复核线索，不直接作出串标、违法或其他法律定性结论。
 
-要求仅限开发机：Node.js 20+。终端执行：
+## 主要功能
+
+- 白色为主的浅色专业界面，检测结果、风险证据和文件属性直接在页面内展开，不使用层层嵌套的弹窗。
+- ZIP 文件名或符合条件的一级目录名可作为供应商名称。
+- 支持 DOCX、DOCM、XLSX、XLSM、PPTX、PPTM、PDF、常见图片和文本文件。
+- 展示 Office 作者、最后保存者、修订号、版本号、程序名称、公司、管理者、创建时间、最后保存时间和总编辑时间等属性；缺失字段明确显示“未提取到”。
+- PDF“说明”属性同时展示传统 Info Dictionary 和 XMP Metadata Stream，包括作者、标题、主题、关键词、创建程序、制作工具、创建时间、修改时间、陷印状态和元数据时间。
+- PDF Info 与 XMP 默认联动修改；也可以解除单项关联，分别编辑两套值，并提示不同阅读器可能显示不同结果。
+- 支持直接修改、标记删除、全选属性，并可选择“保存”覆盖当前文件或“另存为”生成副本；写入完成后会重新读取文件验证结果，并可继续编辑。
+- 默认只启用文件属性检查；完全相同文件、文本 SimHash 相似度、相同图片与媒体指纹默认不启用。
+- 支持人工复核状态、项目 JSON 保存、历史项目打开，以及 PDF、Excel、HTML、JSON 报告导出。
+- 文件真实签名识别、SHA-256、ZIP 路径穿越与解压限制；宏和 PDF JavaScript 只识别、不执行。
+
+## Windows 运行
+
+开发环境建议使用 Node.js 20 或更高版本。在项目目录执行：
 
 ```powershell
-D:\nodejs\npm.cmd install
-D:\nodejs\npm.cmd start
+cd E:\github\volnet\tender-guard
+npm.cmd install
+npm.cmd start
 ```
 
-最终用户不需要 Node.js；使用 `dist` 中的安装程序双击安装。命令行批量检测：
+如果 Electron 下载不完整并提示 `Electron failed to install correctly`，可以删除 Electron 依赖后重新安装：
 
 ```powershell
-node src/cli.js tests\甲.zip tests\乙.zip --out tests-output
+Remove-Item -Recurse -Force .\node_modules\electron
+npm.cmd install
+npm.cmd start
 ```
 
-## 已实现
+最终用户无需安装 Node.js，直接运行构建产物：
 
-- 多 ZIP 选择、拖放、供应商名自动取自 ZIP 文件名、进度与错误提示。
-- 检测维度可勾选：完全相同文件、元数据、SimHash、Excel 公式、图片指纹。
-- “全部文件与属性”按常见属性、文档专有属性、SimHash/内容指纹、路径与安全信息折叠展示。
-- 支持任意挑选 Office、PDF、图片或文本文件进行单文件属性检查，不要求先打包 ZIP。
-- 每个可处理文件可勾选作者、最后保存作者、公司、时间、版本、模板等属性，另存为清理副本；永不覆盖原件。
-- ZIP 路径穿越、符号链接、条目数、单文件、总解压量和压缩比限制；宏与 PDF JavaScript 只识别、不执行。
-- 文件真实签名识别和 SHA-256；DOCX/XLSX/PPTX 的核心属性、公司/管理者、时间、模板、文档 ID、路径、链接、媒体、宏、Excel 隐藏 Sheet 与公式；PDF 信息字典、ID、签名、加密、JavaScript；图片原始哈希。
-- 跨供应商相同文件、作者/编辑人、公司、模板、ID、本地路径、链接、图片、公式结构和文本 SimHash 线索；每条风险保留证据、解释和复核建议。
-- 人工复核状态；项目 JSON 持久化；PDF、Excel、HTML、JSON 导出。
-- 系统浅色/深色模式和简化三步流程。
+```text
+dist\投标慧眼-1.1.0-安装程序.exe
+```
+
+## 命令行检测
+
+```powershell
+node src\cli.js tests\甲.zip tests\乙.zip --out tests-output
+```
 
 ## 测试与构建
 
 ```powershell
-D:\nodejs\npm.cmd test
-D:\nodejs\npm.cmd run dist:win
-D:\nodejs\npm.cmd run dist:mac
+npm.cmd test
+npm.cmd run dist:win
 ```
 
-macOS 安装包必须在 macOS 构建机上生成；未签名包可供内部测试，正式分发需要 Apple Developer ID 与公证。Windows 未签名安装包可能出现 SmartScreen 提示。
+macOS 安装包需要在 macOS 构建机上生成：
+
+```bash
+npm run dist:mac
+```
+
+正式对外分发 Windows 或 macOS 安装包时，应配置对应的平台代码签名。
+
+## PDF 元数据处理
+
+修改 PDF 属性时，程序会同时处理两套常见元数据：
+
+1. 传统 PDF Info Dictionary，例如 `/Author`、`/Title`、`/Creator` 和 `/Producer`。
+2. XMP Metadata Stream，例如 `dc:creator`、`dc:title`、`xmp:CreatorTool` 和 `pdf:Producer`。
+
+默认联动状态下，修改 Info 会同步写入 XMP，确保 Edge、WPS 和 Adobe Acrobat 等读取策略不同的软件尽量显示一致的属性。解除联动后，可以分别维护 Info 与 XMP；此时不同阅读器可能显示不同结果。
 
 ## 安全与数据
 
-软件不包含遥测、联网 API 或在线 AI。真实投标文件、解压内容、检测数据库及报告不得提交到仓库，相关路径已加入 `.gitignore`。原始 ZIP 只读；解析内容在内存或操作系统临时目录中处理，临时 OOXML 副本用后立即删除。
+- 软件不包含遥测、联网 API 或在线 AI，分析过程在本机完成。
+- 只有用户明确点击“保存”时才覆盖当前文件；“另存为”不会修改原文件。
+- 写入时使用临时文件和备份替换流程，完成后重新读取验证元数据。
+- 真实投标文件、解压内容、检测数据库和报告不应提交到仓库，相关路径已加入 `.gitignore`。
+- 加密 Office/PDF 文件只报告状态，不尝试绕过密码或权限限制。
 
 ## 已知限制
 
-- 第一版不对旧式二进制 DOC/XLS/PPT 做深层属性解析，只识别并记录；加密 Office/PDF 只报告状态。
-- PDF 文本提取与 OCR、HEIC 感知哈希、VBA 源码反编译、数字签名证书链验证、SQLite 项目库及属性清理副本尚未实现。
-- 桌面端 PDF 报告使用 Chromium 和系统中文字体排版，完整保留中文；命令行直接生成 PDF 仍为兼容性后备路径。
-- 共同招标模板可能造成内容相似，需人工复核；常见软件与通用作者不会单独形成高风险结论。
+- 旧式二进制 DOC、XLS、PPT 仅识别文件类型，不进行深层属性解析。
+- PDF 文本提取和扫描件判断采用本地结构分析，不包含 OCR。
+- HEIC 感知哈希、VBA 源码反编译和数字签名证书链验证尚未实现。
+- 共同招标模板可能造成内容相似，所有风险线索都需要结合业务证据人工复核。
 
 ## 架构
 
-Electron 主进程持有全部文件权限；沙箱化渲染进程仅通过有限 IPC 调用。`analyzer.js` 执行只读解析与确定性规则，`reports.js` 负责导出，`ui` 只负责展示。依赖版本由 `package-lock.json` 固定。
+Electron 主进程持有文件权限，沙箱化渲染进程仅通过有限 IPC 调用。`src/analyzer.js` 负责只读解析和确定性检测规则，`src/cleaner.js` 负责 Office/PDF 元数据写入与验证，`src/reports.js` 负责报告导出，`src/ui` 负责界面展示和交互。依赖版本由 `package-lock.json` 固定。
