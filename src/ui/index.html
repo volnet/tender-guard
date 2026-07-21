@@ -1,6 +1,27 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><title>投标慧眼</title><link rel="stylesheet" href="style.css"></head><body><header><div class="brand"><span class="mark">慧</span><div><b>投标慧眼</b><small>投标文件异常关联检测</small></div></div><button class="ghost" id="open">打开历史项目</button></header><main>
-<section id="start"><div class="intro"><p class="eyebrow">完全离线 · 原件只读</p><h1>检查文件属性与异常关联</h1><p>可以批量对比多家供应商，也可以任意挑选文件单独查看和清理属性。</p></div><div class="mode-tabs"><button class="mode active" data-mode="compare">多家供应商批量对比</button><button class="mode" data-mode="files">任意文件单独检查</button></div><div id="drop" class="drop"><div class="upload">＋</div><b id="dropTitle">拖入多个供应商 ZIP</b><span id="dropHint">或点击选择 ZIP 文件</span></div><div id="chosen"></div>
-<details id="options" open><summary>选择要检查的项目</summary><div class="checks"><label><input type="checkbox" data-opt="exact" checked> 完全相同的文件</label><label><input type="checkbox" data-opt="metadata" checked> 作者、最后保存人、版本、文档 ID、路径等属性</label><label><input type="checkbox" data-opt="simhash" checked> 文本 SimHash 相似度</label><label><input type="checkbox" data-opt="formula" checked> Excel 公式与错误结构</label><label><input type="checkbox" data-opt="image" checked> 相同图片与媒体指纹</label></div></details><button id="run" class="primary" disabled>开始检测</button></section>
-<section id="working" hidden><div class="spinner"></div><h2>正在本地检测</h2><p id="step">准备文件…</p><progress id="bar" value="0" max="100"></progress><small>文件不会上传。复杂文件可能需要几分钟。</small></section>
-<section id="results" hidden><div class="result-head"><div><p class="eyebrow">检测完成</p><h1 id="projectName"></h1><p id="summary"></p></div><div class="actions"><button id="newCheck">新建检查</button><button id="save">保存项目</button><button id="exportPdf">导出 PDF</button><button id="exportXlsx" class="primary">导出 Excel</button></div></div><div class="notice">检测结果是人工复核线索，不是串标、违法或法律定性结论。</div><nav class="result-tabs"><button class="result-tab active" data-view="risks">风险结果</button><button class="result-tab" data-view="files">全部文件与属性</button></nav><div id="riskView" class="layout"><aside><label>按常见问题排序</label><button class="filter active" data-level="">全部风险 <span id="allCount"></span></button><button class="filter" data-level="极高风险">极高风险</button><button class="filter" data-level="高风险">高风险</button><button class="filter" data-level="中风险">中风险</button><button class="filter" data-level="低风险">低风险</button></aside><div><div id="findings"></div><div id="empty" hidden>没有符合当前筛选条件的风险。</div></div></div><div id="fileView" hidden><div class="file-tools"><input id="fileSearch" placeholder="搜索供应商或文件名"><span id="fileCount"></span></div><div id="fileList"></div></div></section>
-</main><dialog id="detail"><button class="close" aria-label="关闭">×</button><div id="detailBody"></div></dialog><dialog id="fileDetail"><button class="close file-close" aria-label="关闭">×</button><div id="fileDetailBody"></div></dialog><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><title>投标慧眼</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header><div class="brand"><span class="mark">慧</span><div><b>投标慧眼</b><small>投标文件属性与异常关联检测</small></div></div><button class="ghost" id="open">打开历史项目</button></header>
+<main>
+  <section id="start">
+    <div class="intro"><p class="eyebrow">完全离线 · 原件只读</p><h1>检查文件属性与异常关联</h1><p>批量对比供应商文件，也可以选择任意文件单独查看和清理属性。</p></div>
+    <div class="mode-tabs"><button class="mode active" data-mode="compare">多家供应商批量对比</button><button class="mode" data-mode="files">任意文件单独检查</button></div>
+    <div id="drop" class="drop"><div class="upload">＋</div><b id="dropTitle">拖入多个供应商 ZIP</b><span id="dropHint">ZIP 文件名或一级目录名将作为供应商名称</span></div><div id="chosen"></div>
+    <section id="options" class="option-card"><h3>检查项目</h3><div class="checks">
+      <label><input type="checkbox" data-opt="metadata" checked> 文件属性（作者、最后保存者、版本、公司、时间等）</label>
+      <label><input type="checkbox" data-opt="exact"> 完全相同的文件</label>
+      <label><input type="checkbox" data-opt="simhash"> 文本 SimHash 相似度</label>
+      <label><input type="checkbox" data-opt="image"> 相同图片与媒体指纹</label>
+    </div></section>
+    <button id="run" class="primary" disabled>开始检测</button>
+  </section>
+  <section id="working" hidden><div class="spinner"></div><h2>正在本地检测</h2><p id="step">准备文件…</p><progress id="bar" value="0" max="100"></progress><small>文件不会上传，原件不会被修改。</small></section>
+  <section id="results" hidden>
+    <div class="result-head"><div><p class="eyebrow">检测完成</p><h1 id="projectName"></h1><p id="summary"></p></div><div class="actions"><button id="newCheck">新建检查</button><button id="save">保存项目</button><button id="exportPdf">导出 PDF</button><button id="exportXlsx" class="primary">导出 Excel</button></div></div>
+    <div class="notice">检测结果是人工复核线索，不是串标、违法或法律定性结论。</div>
+    <nav class="result-tabs"><button class="result-tab active" data-view="risks">风险结果</button><button class="result-tab" data-view="files">全部文件与属性</button></nav>
+    <div id="riskView" class="result-grid"><aside><label>风险等级</label><button class="filter active" data-level="">全部风险 <span id="allCount"></span></button><button class="filter" data-level="极高风险">极高风险</button><button class="filter" data-level="高风险">高风险</button><button class="filter" data-level="中风险">中风险</button><button class="filter" data-level="低风险">低风险</button></aside><div><div id="findings"></div><div id="empty" class="empty" hidden>没有符合当前筛选条件的风险。</div></div><section id="riskDetail" class="inline-detail placeholder">选择一条风险，在此查看完整依据</section></div>
+    <div id="fileView" hidden><div class="file-tools"><input id="fileSearch" placeholder="搜索供应商或文件名"><span id="fileCount"></span></div><div class="file-grid"><div id="fileList"></div><section id="fileDetail" class="inline-detail placeholder">选择一个文件，在此查看全部属性</section></div></div>
+  </section>
+</main><script src="app.js"></script></body></html>
