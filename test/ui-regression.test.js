@@ -109,6 +109,8 @@ test('application and release artifacts use version 1.0.0 consistently',()=>{
   assert.match(analyzer,/appVersion:'1\.0\.0'/);
   assert.match(manifest.scripts['dist:win'],/--win zip --x64/);
   assert.match(manifest.scripts['dist:mac'],/--mac zip --universal/);
+  assert.match(manifest.scripts['dist:win'],/--publish never/);
+  assert.match(manifest.scripts['dist:mac'],/--publish never/);
   assert.match(workflow,/TenderGuard-\*-Windows-\*\.zip/);
   assert.match(workflow,/TenderGuard-\*-macOS-\*\.zip/);
   assert.match(workflow,/gh release create/);

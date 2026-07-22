@@ -10,8 +10,8 @@
     "test": "node --test",
     "test:ui": "node scripts/ui-smoke.js",
     "analyze": "node src/cli.js",
-    "dist:win": "electron-builder --win zip --x64",
-    "dist:mac": "electron-builder --mac zip --universal"
+    "dist:win": "electron-builder --win zip --x64 --publish never",
+    "dist:mac": "electron-builder --mac zip --universal --publish never"
   },
   "dependencies": {
     "exceljs": "4.4.0",
