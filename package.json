@@ -1,12 +1,14 @@
 {
-  "name": "toubiao-huiyan",
-  "version": "1.1.0",
-  "description": "Offline tender document correlation detector",
+  "name": "tenderguard",
+  "version": "2.0.0",
+  "description": "TenderGuard supplier document review and metadata editor",
+  "author": "TenderGuard",
   "main": "src/main.js",
   "type": "commonjs",
   "scripts": {
     "start": "electron .",
     "test": "node --test",
+    "test:ui": "node scripts/ui-smoke.js",
     "analyze": "node src/cli.js",
     "dist:win": "electron-builder --win nsis",
     "dist:mac": "electron-builder --mac dmg zip"
@@ -23,13 +25,15 @@
     "electron-builder": "26.0.12"
   },
   "build": {
-    "appId": "com.toubiaohuiyan.desktop",
-    "productName": "投标慧眼",
+    "appId": "com.tenderguard.desktop",
+    "productName": "TenderGuard",
     "asar": true,
+    "icon": "src/ui/assets/tenderguard-logo.png",
+    "afterPack": "scripts/after-pack.js",
     "files": ["src/**/*", "package.json", "README.md", "LICENSES.md"],
     "directories": { "output": "dist" },
-    "win": { "target": "nsis", "artifactName": "投标慧眼-${version}-安装程序.${ext}", "signAndEditExecutable": false },
+    "win": { "target": "nsis", "icon": "src/ui/assets/tenderguard-logo.ico", "executableName": "TenderGuard", "artifactName": "TenderGuard-${version}-Setup.${ext}", "signAndEditExecutable": false },
     "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true },
-    "mac": { "target": ["dmg", "zip"], "category": "public.app-category.business", "artifactName": "投标慧眼-${version}-${arch}.${ext}" }
+    "mac": { "target": ["dmg", "zip"], "category": "public.app-category.business", "artifactName": "TenderGuard-${version}-${arch}.${ext}" }
   }
 }

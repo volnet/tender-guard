@@ -1,30 +1,56 @@
 <!doctype html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><title>投标慧眼</title><link rel="stylesheet" href="style.css"><style>.property-editor{display:grid;grid-template-columns:auto minmax(160px,1fr);gap:8px;align-items:center}.delete-property{display:flex;gap:5px;align-items:center;color:#b42318;font-size:12px;white-space:nowrap}.property-value{width:100%;min-width:0;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}.property-value:disabled{background:#f0f2f5;color:var(--muted);text-decoration:line-through}.edit-toolbar{position:sticky;top:-24px;z-index:4;margin:14px -24px 18px;padding:12px 24px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);box-shadow:0 8px 18px #17203312}.bulk-actions,.edit-buttons{display:flex;gap:8px;white-space:nowrap}.save-summary{text-align:center;color:var(--muted);font-size:12px}.property-section summary{display:flex;justify-content:space-between;align-items:center;padding:12px 4px;cursor:pointer;font-weight:700;list-style-position:outside}.property-section summary small{color:var(--muted);font-weight:400;margin-left:auto}.property-section:not([open]) summary{border-bottom:0}.property-section[open] summary{border-bottom:1px solid var(--line);margin-bottom:8px}@media(max-width:900px){.edit-toolbar{grid-template-columns:1fr}.save-summary{text-align:left}}</style></head>
-<body><style>.pdf-metadata-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}.pdf-metadata-grid .property-section{margin:0;border:1px solid var(--line);border-radius:9px;padding:0 10px;background:#fbfcfe}.metadata-link{display:flex;flex-direction:column;gap:2px}.metadata-link label{font-weight:650;white-space:nowrap}.metadata-link small{color:#b54708;max-width:260px}.edit-toolbar{grid-template-columns:auto minmax(150px,1fr) auto auto}.edit-buttons{margin-left:auto}@media(max-width:1100px){.pdf-metadata-grid{grid-template-columns:1fr}.edit-toolbar{grid-template-columns:1fr}.edit-buttons{margin-left:0}}</style>
-<style>body{font-size:13px}header{height:56px;padding:0 24px}main{padding:24px 30px}.result-head h1{font-size:24px}.notice{margin:14px 0;padding:8px 12px}.result-tabs{margin:10px 0 14px}.finding,.file-row{padding:10px 12px;margin-bottom:6px}.finding h3{margin:6px 0 2px}.inline-detail{padding:16px;max-height:calc(100vh - 24px)}.property-section dt,.property-section dd{padding:5px 6px}.property-section dl{grid-template-columns:145px 1fr;padding:3px 8px}.property-section summary{padding:8px 2px}.pdf-description{border:0;border-top:1px solid var(--line);border-radius:0;padding:0;background:transparent}.metadata-table{padding-bottom:6px}.metadata-row{display:grid;grid-template-columns:92px minmax(150px,1fr) 28px minmax(150px,1fr);gap:6px;align-items:center;border-bottom:1px solid var(--line);padding:5px 2px}.metadata-head{font-size:11px;font-weight:700;color:var(--muted);background:#f3f6fa}.metadata-head div:nth-child(3){text-align:center}.metadata-name{font-weight:650}.metadata-cell{display:grid;grid-template-columns:18px minmax(100px,1fr);gap:4px;align-items:center;min-width:0}.metadata-na{display:block;color:var(--muted);padding-left:22px}.field-link{border:0;padding:3px;width:26px;height:26px;border-radius:5px;background:#edf4ff;color:#175cd3}.field-link.unlinked{background:#fff4e5;color:#b54708}.property-value{padding:5px 7px}.delete-property{font-size:0}.edit-toolbar{top:-16px;margin:8px -16px 10px;padding:7px 16px;gap:8px}.edit-toolbar button,button{padding:6px 10px}.edit-buttons{align-items:center}.edit-buttons small{color:var(--muted)}.save-summary{font-size:11px}.layout{gap:16px}.file-grid,.result-grid{gap:14px}@media(max-width:900px){main{padding:16px}.metadata-row{grid-template-columns:80px 1fr 26px}.metadata-head div:nth-child(4){display:none}.metadata-cell:last-child{grid-column:2/4}.metadata-cell:last-child:before{content:'XMP';font-size:10px;color:var(--muted);grid-column:1/-1}.edit-toolbar{grid-template-columns:1fr}}</style>
-<style>.file-detail-sticky{position:sticky;top:0;z-index:8;margin:0 0 8px;padding:0;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 6px 14px #1720330a}.file-heading{display:block;min-width:0;padding:8px 0 6px}.file-name-row{display:block;font-size:15px;font-weight:700;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.file-info-row{display:flex;align-items:center;gap:0;margin-top:3px;min-width:0;color:var(--muted);font-size:11px;line-height:1.35;white-space:nowrap;overflow:hidden}.file-info-row span{min-width:0;overflow:hidden;text-overflow:ellipsis}.file-info-row span+span:before{content:'·';margin:0 6px;color:#98a2b3}.file-info-row span:nth-child(3){flex:1}.file-info-row span:last-child{flex:none}.file-detail-sticky .edit-toolbar{position:static;top:auto;margin:0;padding:6px 0;box-shadow:none;border-bottom:0}.property-value:disabled{color:var(--muted);text-decoration:none;background:#f4f6f8}.metadata-table{overflow-x:auto}.metadata-row{min-width:650px;grid-template-columns:92px minmax(180px,1fr) 28px minmax(180px,1fr)!important}.metadata-cell:last-child{grid-column:auto!important}.metadata-cell:last-child:before{display:none!important}.file-row{grid-template-columns:76px 1fr}.file-icon{width:auto;min-width:64px;padding:0 7px;font-size:12px;white-space:nowrap}@media(max-width:900px){.metadata-head div:nth-child(4){display:block}.file-info-row span:nth-child(3){max-width:45%}}</style>
-<style>.property-value:read-only{color:var(--muted);text-decoration:none;background:#f4f6f8;cursor:default}.property-value:not(:read-only){background:#fff;color:var(--ink);cursor:text}.property-value:not(:read-only):focus{outline:2px solid #84adff;outline-offset:0;border-color:#2563d8}.toolbar-check{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-size:12px}.toolbar-check input{margin:0}.delete-mark{padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:#fff}.delete-mark:has(input:disabled){opacity:.45}.delete-mark:has(input:checked){border-color:#d92d20;color:#b42318;background:#fff5f4}#saveStatus[data-state="success"]{color:#067647;font-weight:650}#saveStatus[data-state="warning"]{color:#b54708}#saveStatus[data-state="working"]{color:#175cd3}#saveStatus[data-state="error"]{color:#b42318;font-weight:650}</style>
-<header><div class="brand"><span class="mark">慧</span><div><b>投标慧眼</b><small>投标文件属性与异常关联检测</small></div></div><button class="ghost" id="open">打开历史项目</button></header>
-<main>
-  <section id="start">
-    <div class="intro"><p class="eyebrow">完全离线 · 原件只读</p><h1>检查文件属性与异常关联</h1><p>批量对比供应商文件，也可以选择任意文件单独查看和清理属性。</p></div>
-    <div class="mode-tabs"><button class="mode active" data-mode="compare">多家供应商批量对比</button><button class="mode" data-mode="files">任意文件单独检查</button></div>
-    <div id="drop" class="drop"><div class="upload">＋</div><b id="dropTitle">拖入多个供应商 ZIP</b><span id="dropHint">ZIP 文件名或一级目录名将作为供应商名称</span></div><div id="chosen"></div>
-    <section id="options" class="option-card"><h3>检查项目</h3><div class="checks">
-      <label><input type="checkbox" data-opt="metadata" checked> 文件属性（作者、最后保存者、版本、公司、时间等）</label>
-      <label><input type="checkbox" data-opt="exact"> 完全相同的文件</label>
-      <label><input type="checkbox" data-opt="simhash"> 文本 SimHash 相似度</label>
-      <label><input type="checkbox" data-opt="image"> 相同图片与媒体指纹</label>
-    </div></section>
-    <button id="run" class="primary" disabled>开始检测</button>
-  </section>
-  <section id="working" hidden><div class="spinner"></div><h2>正在本地检测</h2><p id="step">准备文件…</p><progress id="bar" value="0" max="100"></progress><small>文件不会上传，原件不会被修改。</small></section>
-  <section id="results" hidden>
-    <div class="result-head"><div><p class="eyebrow">检测完成</p><h1 id="projectName"></h1><p id="summary"></p></div><div class="actions"><button id="back">← 返回</button><button id="newCheck">新建检查</button><button id="save">保存项目</button><button id="exportPdf">导出 PDF</button><button id="exportXlsx" class="primary">导出 Excel</button></div></div>
-    <div class="notice">检测结果是人工复核线索，不是串标、违法或法律定性结论。</div>
-    <nav class="result-tabs"><button class="result-tab active" data-view="risks">风险结果</button><button class="result-tab" data-view="files">全部文件与属性</button></nav>
-    <div id="riskView" class="result-grid"><aside><label>风险等级</label><button class="filter active" data-level="">全部风险 <span id="allCount"></span></button><button class="filter" data-level="极高风险">极高风险</button><button class="filter" data-level="高风险">高风险</button><button class="filter" data-level="中风险">中风险</button><button class="filter" data-level="低风险">低风险</button></aside><div><div id="findings"></div><div id="empty" class="empty" hidden>没有符合当前筛选条件的风险。</div></div><section id="riskDetail" class="inline-detail placeholder">选择一条风险，在此查看完整依据</section></div>
-    <div id="fileView" hidden><div class="file-tools"><input id="fileSearch" placeholder="搜索供应商或文件名"><span id="fileCount"></span></div><div class="file-grid"><div id="fileList"></div><section id="fileDetail" class="inline-detail placeholder">选择一个文件，在此查看全部属性</section></div></div>
-  </section>
-</main><script src="app.js"></script></body></html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>TenderGuard</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="pro.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="titlebar">
+      <div class="brand"><img src="assets/tenderguard-logo.svg" alt=""><div><strong>TenderGuard</strong><span>Document Intelligence Workspace</span></div></div>
+      <div id="workspaceTitle" class="workspace-title">开始</div>
+      <div class="title-actions"><button id="openProject" class="quiet">打开项目</button></div>
+    </header>
+    <aside class="activity-bar" aria-label="工作台">
+      <button class="activity active" data-home="compare" title="供应商批量审查"><span>⌘</span><small>审查</small></button>
+      <button class="activity" data-home="files" title="文件属性编辑器"><span>▤</span><small>编辑</small></button>
+      <div class="activity-spacer"></div>
+      <button id="newWorkspace" class="activity" title="新建工作台"><span>＋</span><small>新建</small></button>
+    </aside>
+    <main class="workbench">
+      <section id="start" class="start-view">
+        <div class="welcome-copy"><span class="overline">TENDER DOCUMENT INTELLIGENCE</span><h1>选择工作台</h1><p>批量审查供应商之间的文件关联，或直接维护单个文件的属性。</p></div>
+        <div class="workspace-cards">
+          <button class="workspace-card active" data-mode="compare"><span class="card-icon">⌘</span><strong>多家供应商批量审查</strong><p>每个 ZIP 代表一家供应商，检查文件一致性、作者与关键元数据关联。</p><em>至少 2 个 ZIP</em></button>
+          <button class="workspace-card" data-mode="files"><span class="card-icon">▤</span><strong>文件属性编辑器</strong><p>打开 Office、PDF、图片或文本文件，查看、修改和清理可编辑属性。</p><em>支持多选文件</em></button>
+        </div>
+        <div id="drop" class="drop-zone"><span class="drop-symbol">＋</span><div><strong id="dropTitle">添加供应商 ZIP</strong><p id="dropHint">ZIP 文件名将作为供应商名称</p></div><button type="button" class="primary">选择文件</button></div>
+        <div id="chosen" class="chosen-list"></div>
+        <section id="options" class="review-options"><div><strong>审查范围</strong><span>文件一致性始终汇总；下列项目控制风险线索</span></div><label><input type="checkbox" data-opt="metadata" checked> 文件属性关联</label><label><input type="checkbox" data-opt="exact"> 完全相同文件作为风险</label><label><input type="checkbox" data-opt="simhash"> 文本 SimHash</label><label><input type="checkbox" data-opt="image"> 图片与媒体指纹</label></section>
+        <button id="run" class="primary run-button" disabled>开始供应商审查</button>
+      </section>
+
+      <section id="working" class="working-view" hidden><img src="assets/tenderguard-logo.svg" alt=""><div class="spinner"></div><h2>正在本地审查</h2><p id="step">准备文件…</p><progress id="bar" value="0" max="100"></progress><small>所有文件只在本机处理，不会上传。</small></section>
+
+      <section id="compareWorkspace" class="workspace-view" hidden>
+        <div class="workspace-header"><div><span class="overline">SUPPLIER REVIEW</span><h1 id="compareProjectName"></h1><p id="compareSummary"></p></div><div class="command-bar"><button class="backHome">返回</button><button id="saveProject">保存项目</button><button id="exportPdf">导出 PDF</button><button id="exportXlsx" class="primary">导出操作报告</button></div></div>
+        <nav class="workspace-tabs"><button class="workspace-tab active" data-section="overview">文件审查</button><button class="workspace-tab" data-section="attributes">属性关联审查</button><button class="workspace-tab" data-section="report">操作记录</button></nav>
+        <div id="compareOverview" class="workspace-section"></div>
+        <div id="compareAttributes" class="workspace-section" hidden></div>
+        <div id="compareReport" class="workspace-section" hidden></div>
+      </section>
+
+      <section id="editorWorkspace" class="workspace-view" hidden>
+        <div class="workspace-header"><div><span class="overline">PROPERTY EDITOR</span><h1>文件属性编辑器</h1><p id="editorSummary"></p></div><div class="command-bar"><button class="backHome">返回</button><button id="addEditorFiles">添加文件</button><button id="saveEditorProject">保存项目</button></div></div>
+        <div class="editor-layout"><aside class="explorer"><div class="panel-title"><strong>文件</strong><span class="panel-tools"><span id="editorFileCount"></span><button id="addEditorFilesInline" class="icon-button" title="添加文件" aria-label="添加文件">＋</button></span></div><input id="fileSearch" class="search" placeholder="搜索文件"><div id="editorFileList" class="explorer-list"></div></aside><div id="editorSplitter" class="editor-splitter" role="separator" aria-label="调整文件栏宽度" aria-orientation="vertical" tabindex="0"></div><section id="editorDetail" class="editor-detail empty-state"><div><strong>选择文件开始编辑</strong><p>属性将在这里直接展开，不打开额外弹窗。</p></div></section></div>
+      </section>
+    </main>
+    <aside id="propertyDrawer" class="property-drawer" hidden><div class="drawer-head"><div><span>属性编辑器</span><strong id="drawerContext"></strong></div><button id="closeDrawer" aria-label="关闭">×</button></div><section id="drawerDetail" class="drawer-body"></section></aside>
+    <footer class="statusbar"><span><i></i> 本地模式</span><span id="statusText">就绪</span><span>TenderGuard 2.0</span></footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

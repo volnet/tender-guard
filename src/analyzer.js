@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const yauzl = require('yauzl');
 const { XMLParser } = require('fast-xml-parser');
 const { PDFDocument, PDFArray, PDFRawStream, PDFName, PDFDict, decodePDFRawStream } = require('pdf-lib');
+const { buildAudit } = require('./audit');
 
 const LIMITS = Object.freeze({ entries: 20000, total: 2 * 1024 ** 3, single: 512 * 1024 ** 2, ratio: 200, depth: 3 });
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_', parseTagValue: false });
@@ -28,6 +29,19 @@ function classify(name, b) {
   if (h.startsWith('d0cf11e0a1b11ae1')) return ['application/x-ole-storage', ['.doc'].includes(ext) ? 'word-legacy' : ['.xls'].includes(ext) ? 'excel-legacy' : ['.ppt'].includes(ext) ? 'powerpoint-legacy' : 'ole'];
   if (['.txt','.csv','.xml','.json','.html','.htm'].includes(ext)) return ['text/plain', 'text'];
   return ['application/octet-stream', 'other'];
+}
+
+function imageExtract(b,mime){
+  const result={format:mime};
+  if(mime==='image/png'&&b.length>=24){
+    result.width=b.readUInt32BE(16);result.height=b.readUInt32BE(20);result.bitDepth=b[24];result.colorType=b[25];
+    let offset=8;const textChunks={};while(offset+12<=b.length){const length=b.readUInt32BE(offset),type=b.subarray(offset+4,offset+8).toString('ascii'),data=b.subarray(offset+8,offset+8+length);if(offset+12+length>b.length)break;if(type==='tEXt'){const split=data.indexOf(0);if(split>0)textChunks[data.subarray(0,split).toString('latin1')]=data.subarray(split+1).toString('utf8');}if(type==='iTXt'){const split=data.indexOf(0);if(split>0){const keyword=data.subarray(0,split).toString('latin1'),parts=data.subarray(split+1);let cursor=2;for(let i=0;i<3&&cursor<parts.length;i++){const end=parts.indexOf(0,cursor);cursor=end<0?parts.length:end+1;}textChunks[keyword]=parts.subarray(cursor).toString('utf8');}}offset+=length+12;if(type==='IEND')break;}
+    result.textMetadata=textChunks;result.author=textChunks.Author||textChunks.author||'';result.title=textChunks.Title||textChunks.title||'';result.description=textChunks.Description||textChunks.Comment||'';result.software=textChunks.Software||textChunks['Creation Time']||'';
+  } else if(mime==='image/jpeg'){
+    let offset=2;while(offset+9<b.length){if(b[offset]!==0xff){offset++;continue;}const marker=b[offset+1],length=b.readUInt16BE(offset+2);if([0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker)&&offset+8<b.length){result.height=b.readUInt16BE(offset+5);result.width=b.readUInt16BE(offset+7);break;}if(length<2)break;offset+=length+2;}
+  }
+  if(result.width&&result.height)result.dimensions=`${result.width} × ${result.height}`;
+  return result;
 }
 
 async function openZip(file) {
@@ -116,7 +130,7 @@ function propertyGroups(f) {
   return [
     {id:'common',title:'常见文件属性',open:true,items:{文件名:f.name,'ZIP 内路径':f.zipPath,文件类型:f.kind,MIME:f.mime,扩展名:f.extension,文件大小:formatBytes(f.size),'SHA-256':f.sha256,...(office?{作者:missing(a.author),'最后一次保存者':missing(a.lastEditor),修订号:missing(a.revision),版本号:missing(a.version||a.appVersion),程序名称:missing(a.application),公司:missing(a.company),管理者:missing(a.manager),'创建内容的时间':missing(a.created),'最后一次保存的日期':missing(a.modified)}:f.kind==='pdf'?{}:useful({作者:a.author,'最后一次保存者':a.lastEditor,'创建内容的时间':a.created,'最后一次保存的日期':a.modified,程序名称:a.application,版本号:a.version||a.appVersion,公司:a.company,管理者:a.manager}))}},
     {id:'pdf-metadata',title:'说明',open:true,xmpStatus:a.xmp?.present?'已读取':a.xmp?.parseError||'不存在',items:f.kind==='pdf'?{作者:{field:'author',info:missing(a.author),xmp:missing(a.xmp?.author)},标题:{field:'title',info:missing(a.title),xmp:missing(a.xmp?.title)},主题:{field:'subject',info:missing(a.subject),xmp:missing(a.xmp?.subject)},关键词:{field:'keywords',info:missing(a.keywords),xmp:missing(a.xmp?.keywords)},'创建程序':{field:'creator',info:missing(a.creator),xmp:missing(a.xmp?.creator)},'制作工具':{field:'producer',info:missing(a.producer),xmp:missing(a.xmp?.producer)},'创建时间':{field:'created',info:missing(a.created),xmp:missing(a.xmp?.created)},'修改时间':{field:'modified',info:missing(a.modified),xmp:missing(a.xmp?.modified)},'陷印状态':{field:'trapped',info:missing(a.trapped),xmp:missing(a.xmp?.trapped)},'元数据时间':{field:'metadataDate',info:'不适用',xmp:missing(a.xmp?.metadataDate),infoReadOnly:true}}:{}},
-    {id:'document',title:f.kind==='pdf'?'PDF 文件结构':f.kind==='excel'?'Excel 专有属性':f.kind==='word'?'Word 专有属性':f.kind==='powerpoint'?'PowerPoint 专有属性':'文档专有属性',open:true,items:useful({模板:a.template,总编辑时间:a.totalEditingTime?`${a.totalEditingTime} 分钟`:'','PDF 版本':a.pdfVersion,'扫描件文档':a.scannedDocument,页数:a.pageCount,文档ID:a.documentIds,工作表:a.sheets})},
+    {id:'document',title:f.kind==='pdf'?'PDF 文件结构':f.kind==='excel'?'Excel 专有属性':f.kind==='word'?'Word 专有属性':f.kind==='powerpoint'?'PowerPoint 专有属性':f.kind==='image'?'图片属性':'文档专有属性',open:true,items:useful({模板:a.template,总编辑时间:a.totalEditingTime?`${a.totalEditingTime} 分钟`:'','PDF 版本':a.pdfVersion,'扫描件文档':a.scannedDocument,页数:a.pageCount,文档ID:a.documentIds,工作表:a.sheets,图片格式:a.format,尺寸:a.dimensions,宽度:a.width,高度:a.height,位深度:a.bitDepth,创建软件:a.software,图片作者:a.author,图片标题:a.title,图片说明:a.description,文本元数据:a.textMetadata})},
     {id:'fingerprint',title:'内容指纹与相似度',items:useful({'SimHash':a.textFingerprint,媒体文件哈希:a.mediaHashes,内部结构哈希:a.internalStructureHash,自定义属性哈希:a.customProperties})},
     {id:'paths',title:'链接、路径与嵌入内容',items:useful({本地路径:a.localPaths,外部链接:a.externalLinks,包含宏:a.hasMacros,包含PDF脚本:a.hasJavaScript,包含签名:a.hasSignature,已加密:a.encrypted})},
     {id:'integrity',title:'格式与解析状态',items:useful({扩展名不一致:f.extensionMismatch,解析错误:f.parseError})}
@@ -125,10 +139,10 @@ function propertyGroups(f) {
 
 async function analyzeBuffer(b,name,origin={}) {
   const [mime,kind]=classify(name,b); const f={name:path.basename(name),zipPath:origin.entryPath||name,sourcePath:origin.sourcePath||'',size:b.length,sha256:sha(b),mime,kind,extension:path.extname(name).toLowerCase(),extensionMismatch:false,attributes:{}};
-  try{if(['word','excel','powerpoint'].includes(kind))f.attributes=await officeExtract(b,kind);else if(kind==='pdf')f.attributes=await pdfExtract(b);else if(kind==='image')f.attributes={imageHash:f.sha256};else if(kind==='text'){const t=b.toString('utf8').slice(0,200000);f.attributes={textFingerprint:simhash(t),textSample:t};}}catch(x){f.parseError=x.message;} f.propertyGroups=propertyGroups(f); return f;
+  try{if(['word','excel','powerpoint'].includes(kind))f.attributes=await officeExtract(b,kind);else if(kind==='pdf')f.attributes=await pdfExtract(b);else if(kind==='image')f.attributes={imageHash:f.sha256,...imageExtract(b,mime)};else if(kind==='text'){const t=b.toString('utf8').slice(0,200000);f.attributes={textFingerprint:simhash(t),textSample:t};}}catch(x){f.parseError=x.message;} f.propertyGroups=propertyGroups(f); return f;
 }
 
-async function analyzeFiles(filePaths,options={}) {const files=[];for(let i=0;i<filePaths.length;i++){const p=path.resolve(filePaths[i]),b=await fsp.readFile(p);const f=await analyzeBuffer(b,path.basename(p),{sourcePath:p});f.supplier='单文件检查';files.push(f);options.progress?.({done:i+1,total:filePaths.length,name:path.basename(p)});}return {schemaVersion:2,appVersion:'1.1.0',id:crypto.randomUUID(),name:'单文件检查',mode:'files',createdAt:new Date().toISOString(),submissions:[{id:crypto.randomUUID(),supplier:'单文件检查',zipName:'本地文件',zipPath:'',fileCount:files.length,totalSize:files.reduce((n,f)=>n+f.size,0),files}],findings:[],disclaimer:'单文件属性检查仅展示可提取信息；清理操作始终生成新副本。'};}
+async function analyzeFiles(filePaths,options={}) {const files=[];for(let i=0;i<filePaths.length;i++){const p=path.resolve(filePaths[i]),b=await fsp.readFile(p);const f=await analyzeBuffer(b,path.basename(p),{sourcePath:p});f.supplier='本地文件';files.push(f);options.progress?.({done:i+1,total:filePaths.length,name:path.basename(p)});}const submissions=[{id:crypto.randomUUID(),supplier:'本地文件',zipName:'本地文件',zipPath:'',fileCount:files.length,totalSize:files.reduce((n,f)=>n+f.size,0),files}];return {schemaVersion:3,appVersion:'2.0.0',id:crypto.randomUUID(),name:'文件属性编辑器',mode:'files',createdAt:new Date().toISOString(),submissions,findings:[],audit:buildAudit(submissions),operationLog:[],disclaimer:'文件属性编辑器仅在用户明确保存时写入文件；另存为不会修改原文件。'};}
 function simhash(s){const toks=normalize(s).match(/[\p{L}\p{N}]{2,}/gu)||[]; if(!toks.length)return'';const v=new Int32Array(64);for(const t of toks){const h=crypto.createHash('sha256').update(t).digest();for(let i=0;i<64;i++)v[i]+=((h[Math.floor(i/8)]>>(i%8))&1)?1:-1;}let x=0n;for(let i=0;i<64;i++)if(v[i]>=0)x|=1n<<BigInt(i);return x.toString(16).padStart(16,'0');}
 function hamming(a,b){if(!a||!b)return 64;let x=BigInt('0x'+a)^BigInt('0x'+b),n=0;while(x){n++;x&=x-1n;}return n;}
 
@@ -155,5 +169,5 @@ function correlate(submissions, enabled={}) {
   }
   return findings.sort((a,b)=>b.weight-a.weight);
 }
-async function analyzeProject(zipPaths, options={}) { const submissions=[]; for(let i=0;i<zipPaths.length;i++){const p=path.resolve(zipPaths[i]);const archive=await analyzeZip(p,path.basename(p,path.extname(p)),(d,t,n)=>options.progress?.({supplier:i+1,suppliers:zipPaths.length,done:d,total:t,name:n}));submissions.push(...supplierSubmissions(archive));} return {schemaVersion:2,appVersion:'1.1.0',id:crypto.randomUUID(),name:options.name||`检测项目 ${new Date().toLocaleDateString('zh-CN')}`,mode:'compare',createdAt:new Date().toISOString(),method:'离线确定性规则 v1.1',detectionOptions:options.detectionOptions||{},limits:LIMITS,submissions,findings:correlate(submissions,options.detectionOptions),disclaimer:'本系统仅发现异常关联与同源风险，不直接作出串标、违法或法律定性结论；结果须结合其他证据人工复核。'}; }
-module.exports={LIMITS,analyzeProject,analyzeFiles,analyzeZip,analyzeBuffer,correlate,listZip,normalize,sha,propertyGroups,openZip,readEntry};
+async function analyzeProject(zipPaths, options={}) { const submissions=[]; for(let i=0;i<zipPaths.length;i++){const p=path.resolve(zipPaths[i]);const archive=await analyzeZip(p,path.basename(p,path.extname(p)),(d,t,n)=>options.progress?.({supplier:i+1,suppliers:zipPaths.length,done:d,total:t,name:n}));submissions.push(archive);} const audit=buildAudit(submissions);return {schemaVersion:3,appVersion:'2.0.0',id:crypto.randomUUID(),name:options.name||`供应商审查 ${new Date().toLocaleDateString('zh-CN')}`,mode:'compare',createdAt:new Date().toISOString(),method:'TenderGuard 离线确定性审查引擎 v2.0',detectionOptions:options.detectionOptions||{},limits:LIMITS,submissions,findings:correlate(submissions,options.detectionOptions),audit,operationLog:[],disclaimer:'TenderGuard 仅发现文件一致性与属性关联线索，不直接作出串标、违法或法律定性结论；结果须结合其他证据人工复核。'}; }
+module.exports={LIMITS,analyzeProject,analyzeFiles,analyzeZip,analyzeBuffer,correlate,listZip,normalize,sha,propertyGroups,openZip,readEntry,imageExtract};

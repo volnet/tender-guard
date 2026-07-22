@@ -1,7 +1,8 @@
 node_modules/
 dist/
 .work/
-*.tenderlens.json
+*.tenderguard.json
+tmp/
 tests-output/
 tests/**/*.db
 tests/**/*.sqlite*
