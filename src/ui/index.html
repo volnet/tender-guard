@@ -29,7 +29,7 @@
         </div>
         <div id="drop" class="drop-zone"><span class="drop-symbol">＋</span><div><strong id="dropTitle">添加供应商 ZIP</strong><p id="dropHint">ZIP 文件名将作为供应商名称</p></div><button type="button" class="primary">选择文件</button></div>
         <div id="chosen" class="chosen-list"></div>
-        <section id="options" class="review-options"><div><strong>审查范围</strong><span>文件一致性始终汇总；下列项目控制风险线索</span></div><label><input type="checkbox" data-opt="metadata" checked> 文件属性关联</label><label><input type="checkbox" data-opt="exact"> 完全相同文件作为风险</label><label><input type="checkbox" data-opt="simhash"> 文本 SimHash</label><label><input type="checkbox" data-opt="image"> 图片与媒体指纹</label></section>
+        <section id="options" class="review-options"><div><strong>审查范围</strong><span>文件一致性始终汇总；下列项目控制风险线索</span></div><label><input type="checkbox" data-opt="metadata" checked> 文件属性重复</label><label><input type="checkbox" data-opt="exact"> 完全相同文件作为风险</label><label><input type="checkbox" data-opt="simhash"> 文本 SimHash</label><label><input type="checkbox" data-opt="image"> 图片与媒体指纹</label></section>
         <button id="run" class="primary run-button" disabled>开始供应商审查</button>
       </section>
 
@@ -37,7 +37,7 @@
 
       <section id="compareWorkspace" class="workspace-view" hidden>
         <div class="workspace-header"><div><span class="overline">SUPPLIER REVIEW</span><h1 id="compareProjectName"></h1><p id="compareSummary"></p></div><div class="command-bar"><button class="backHome">返回</button><button id="saveProject">保存项目</button><button id="exportPdf">导出 PDF</button><button id="exportXlsx" class="primary">导出操作报告</button></div></div>
-        <nav class="workspace-tabs"><button class="workspace-tab active" data-section="overview">文件审查</button><button class="workspace-tab" data-section="attributes">属性关联审查</button><button class="workspace-tab" data-section="report">操作记录</button></nav>
+        <nav class="workspace-tabs"><button class="workspace-tab active" data-section="overview">文件审查</button><button class="workspace-tab" data-section="attributes">属性重复审查</button><button class="workspace-tab" data-section="report">操作记录</button></nav>
         <div id="compareOverview" class="workspace-section"></div>
         <div id="compareAttributes" class="workspace-section" hidden></div>
         <div id="compareReport" class="workspace-section" hidden></div>

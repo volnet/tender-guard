@@ -39,7 +39,7 @@ test('batch review and property editor are separate workspaces',()=>{
   assert.match(html,/id="editorWorkspace"/);
   assert.match(html,/文件审查/);
   assert.doesNotMatch(html,/供应商概览|文件级审查/);
-  assert.match(html,/属性关联审查/);
+  assert.match(html,/属性重复审查/);
   assert.match(html,/操作记录/);
   assert.match(app,/--supplier-count:\$\{Math\.max\(1,data\.supplierStats\.length\)\}/);
   assert.match(css,/repeat\(var\(--supplier-count\),minmax\(245px,1fr\)\)/);
@@ -64,11 +64,27 @@ test('supplier review uses numbered expandable metadata cards and inline filters
   assert.match(app,/file-sequence/);
   assert.match(app,/查看更多与编辑/);
   assert.match(app,/仅查看相同文件/);
-  assert.match(app,/仅查看属性相同文件/);
+  assert.match(app,/仅查看属性重复文件/);
   assert.match(app,/文件大小/);
+  assert.match(app,/&lt;空&gt;/);
+  assert.match(app,/fileIssues/);
+  assert.match(app,/issue-tag/);
+  assert.match(app,/>\+<\/button>/);
+  assert.match(app,/>−<\/button>/);
   assert.match(app,/index===0\?'open'/);
   assert.match(css,/\.alert-banner\.fatal/);
   assert.doesNotMatch(html,/id="compareFiles"/);
+});
+
+test('attribute repetition review uses one full-path evidence row per file',()=>{
+  const app=read('src/ui/app.js');
+  const css=read('src/ui/pro.css');
+  assert.match(app,/跨供应商属性重复/);
+  assert.match(app,/duplicate-file-row/);
+  assert.match(app,/group\.riskLevel/);
+  assert.match(app,/pathMarkup\(ref\.path\)/);
+  assert.match(css,/\.duplicate-file-row \{[^}]*grid-template-columns/);
+  assert.match(css,/\.path-directory/);
 });
 
 test('save messages are rendered on separate lines',()=>{
