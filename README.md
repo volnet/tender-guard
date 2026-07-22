@@ -76,19 +76,25 @@ npm.cmd test
 npm.cmd run dist:win
 ```
 
-Windows 安装程序输出为：
+Windows 免安装完整包输出为：
 
 ```text
-dist\TenderGuard-2.0.0-Setup.exe
+dist\TenderGuard-1.0.0-Windows-x64.zip
 ```
 
-macOS 安装包需要在 macOS 构建机上生成：
+解压后直接运行 `TenderGuard.exe`，无需另行安装 Node.js、Electron 或 npm 依赖。
+
+macOS Universal 免安装完整包需要在 macOS 构建机上生成：
 
 ```bash
 npm run dist:mac
 ```
 
-正式对外分发时应配置对应平台的代码签名。
+输出为 `dist/TenderGuard-1.0.0-macOS-universal.zip`，同时包含 Intel 与 Apple Silicon 所需运行代码。解压后运行 `TenderGuard.app`，无需另行安装 Node.js 或 npm 依赖。未配置 Apple Developer 签名时，首次启动可能需要在 Finder 中右键选择“打开”。
+
+推送 `v1.0.0` 标签后，GitHub Actions 会分别在 Windows 和 macOS 构建机上生成上述两个 ZIP，并自动附加到 GitHub Release。
+
+正式对外分发时应配置对应平台的代码签名与 macOS 公证。
 
 ## 命令行审查
 

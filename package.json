@@ -1,6 +1,6 @@
 {
   "name": "tenderguard",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "TenderGuard supplier document review and metadata editor",
   "author": "TenderGuard",
   "main": "src/main.js",
@@ -10,8 +10,8 @@
     "test": "node --test",
     "test:ui": "node scripts/ui-smoke.js",
     "analyze": "node src/cli.js",
-    "dist:win": "electron-builder --win nsis",
-    "dist:mac": "electron-builder --mac dmg zip"
+    "dist:win": "electron-builder --win zip --x64",
+    "dist:mac": "electron-builder --mac zip --universal"
   },
   "dependencies": {
     "exceljs": "4.4.0",
@@ -30,10 +30,26 @@
     "asar": true,
     "icon": "src/ui/assets/tenderguard-logo.png",
     "afterPack": "scripts/after-pack.js",
-    "files": ["src/**/*", "package.json", "README.md", "LICENSES.md"],
-    "directories": { "output": "dist" },
-    "win": { "target": "nsis", "icon": "src/ui/assets/tenderguard-logo.ico", "executableName": "TenderGuard", "artifactName": "TenderGuard-${version}-Setup.${ext}", "signAndEditExecutable": false },
-    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true },
-    "mac": { "target": ["dmg", "zip"], "category": "public.app-category.business", "artifactName": "TenderGuard-${version}-${arch}.${ext}" }
+    "files": [
+      "src/**/*",
+      "package.json",
+      "README.md",
+      "LICENSES.md"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "zip",
+      "icon": "src/ui/assets/tenderguard-logo.ico",
+      "executableName": "TenderGuard",
+      "artifactName": "TenderGuard-${version}-Windows-${arch}.${ext}",
+      "signAndEditExecutable": false
+    },
+    "mac": {
+      "target": "zip",
+      "category": "public.app-category.business",
+      "artifactName": "TenderGuard-${version}-macOS-${arch}.${ext}"
+    }
   }
 }

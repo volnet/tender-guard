@@ -98,3 +98,18 @@ test('visible product branding contains no legacy product names',()=>{
   assert.match(source,/TenderGuard/);
   assert.doesNotMatch(source,forbidden);
 });
+
+test('application and release artifacts use version 1.0.0 consistently',()=>{
+  const manifest=JSON.parse(read('package.json'));
+  const html=read('src/ui/index.html');
+  const analyzer=read('src/analyzer.js');
+  const workflow=read('.github/workflows/release.yml');
+  assert.equal(manifest.version,'1.0.0');
+  assert.match(html,/TenderGuard 1\.0\.0/);
+  assert.match(analyzer,/appVersion:'1\.0\.0'/);
+  assert.match(manifest.scripts['dist:win'],/--win zip --x64/);
+  assert.match(manifest.scripts['dist:mac'],/--mac zip --universal/);
+  assert.match(workflow,/TenderGuard-\*-Windows-\*\.zip/);
+  assert.match(workflow,/TenderGuard-\*-macOS-\*\.zip/);
+  assert.match(workflow,/gh release create/);
+});
