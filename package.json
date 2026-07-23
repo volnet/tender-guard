@@ -1,8 +1,8 @@
 {
-  "name": "presalesguard",
-  "version": "1.1.0",
-  "description": "PreSalesGuard pre-sales document review and metadata editor",
-  "author": "PreSalesGuard",
+  "name": "presalesx",
+  "version": "1.2.0",
+  "description": "PreSalesX pre-sales document review and metadata editor",
+  "author": "PreSalesX",
   "main": "src/main.js",
   "type": "commonjs",
   "scripts": {
@@ -25,10 +25,10 @@
     "electron-builder": "26.0.12"
   },
   "build": {
-    "appId": "com.presalesguard.desktop",
-    "productName": "PreSalesGuard",
+    "appId": "com.presalesx.desktop",
+    "productName": "PreSalesX",
     "asar": true,
-    "icon": "src/ui/assets/presalesguard-logo.png",
+    "icon": "src/ui/assets/presalesx-logo.png",
     "afterPack": "scripts/after-pack.js",
     "files": [
       "src/**/*",
@@ -41,16 +41,16 @@
     },
     "win": {
       "target": "zip",
-      "icon": "src/ui/assets/presalesguard-logo.ico",
-      "executableName": "PreSalesGuard",
-      "artifactName": "PreSalesGuard-${version}-Windows-${arch}.${ext}",
+      "icon": "src/ui/assets/presalesx-logo.ico",
+      "executableName": "PreSalesX",
+      "artifactName": "PreSalesX-${version}-Windows-${arch}.${ext}",
       "signAndEditExecutable": false
     },
     "mac": {
       "target": "zip",
       "category": "public.app-category.business",
-      "icon": "src/ui/assets/presalesguard-logo.png",
-      "artifactName": "PreSalesGuard-${version}-macOS-${arch}.${ext}"
+      "icon": "src/ui/assets/presalesx-logo.png",
+      "artifactName": "PreSalesX-${version}-macOS-${arch}.${ext}"
     }
   }
 }

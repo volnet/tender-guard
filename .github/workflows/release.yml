@@ -22,8 +22,8 @@ jobs:
       - run: npm run dist:win
       - uses: actions/upload-artifact@v4
         with:
-          name: presalesguard-windows
-          path: dist/PreSalesGuard-*-Windows-*.zip
+          name: presalesx-windows
+          path: dist/PreSalesX-*-Windows-*.zip
           if-no-files-found: error
 
   macos:
@@ -41,8 +41,8 @@ jobs:
       - run: npm run dist:mac
       - uses: actions/upload-artifact@v4
         with:
-          name: presalesguard-macos
-          path: dist/PreSalesGuard-*-macOS-*.zip
+          name: presalesx-macos
+          path: dist/PreSalesX-*-macOS-*.zip
           if-no-files-found: error
 
   release:
@@ -60,5 +60,5 @@ jobs:
         run: >-
           gh release create "${GITHUB_REF_NAME}"
           release-assets/*.zip
-          --title "PreSalesGuard ${GITHUB_REF_NAME#v}"
+          --title "PreSalesX ${GITHUB_REF_NAME#v}"
           --generate-notes

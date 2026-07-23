@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">PreSalesX</title>
+  <desc id="desc">P 与 X 字母组合，代表售前工作的交叉审查与扩展能力</desc>
+  <defs>
+    <linearGradient id="tile" x1="8" y1="7" x2="57" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#149BFF"/>
+      <stop offset=".5" stop-color="#315EF5"/>
+      <stop offset="1" stop-color="#4B32C3"/>
+    </linearGradient>
+    <linearGradient id="xmark" x1="36" y1="19" x2="51" y2="45" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A7FFF1"/>
+      <stop offset="1" stop-color="#34D7C7"/>
+    </linearGradient>
+    <filter id="shadow" x="-18%" y="-14%" width="136%" height="142%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#172A74" flood-opacity=".3"/>
+    </filter>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#tile)" filter="url(#shadow)"/>
+  <rect x="8.5" y="8.5" width="47" height="47" rx="12.5" fill="none" stroke="#FFFFFF" stroke-opacity=".2"/>
+  <path fill="#FFFFFF" d="M14.5 17h12.1c7.3 0 11.4 3.7 11.4 9.8 0 6.2-4.2 10-11.5 10h-4.6V48h-7.4V17Zm7.4 6.2v7.5h4.2c3 0 4.6-1.2 4.6-3.8 0-2.5-1.6-3.7-4.6-3.7h-4.2Z"/>
+  <path fill="none" stroke="url(#xmark)" stroke-width="6.4" stroke-linecap="round" d="m37.2 20.2 14.3 24M51.5 20.2l-14.3 24"/>
+</svg>

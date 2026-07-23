@@ -92,30 +92,33 @@ test('save messages are rendered on separate lines',()=>{
   assert.match(css,/\.save-summary span\{display:block/);
 });
 
-test('visible product branding uses PreSalesGuard consistently',()=>{
+test('visible product branding uses PreSalesX consistently',()=>{
   const source=['README.md','package.json','package-lock.json','src/main.js','src/cli.js','src/reports.js','src/ui/index.html','src/ui/app.js','scripts/after-pack.js','scripts/ui-smoke.js','.github/workflows/release.yml'].map(read).join('\n');
   const forbidden=new RegExp([
     Buffer.from('54656e6465724775617264','hex').toString(),
     Buffer.from('74656e6465722d6775617264','hex').toString(),
-    Buffer.from('74656e6465726775617264','hex').toString()
+    Buffer.from('74656e6465726775617264','hex').toString(),
+    Buffer.from('50726553616c65734775617264','hex').toString(),
+    Buffer.from('70726573616c65732d6775617264','hex').toString(),
+    Buffer.from('70726573616c65736775617264','hex').toString()
   ].join('|'),'i');
-  assert.match(source,/PreSalesGuard/);
+  assert.match(source,/PreSalesX/);
   assert.doesNotMatch(source,forbidden);
 });
 
-test('application and release artifacts use version 1.1.0 consistently',()=>{
+test('application and release artifacts use version 1.2.0 consistently',()=>{
   const manifest=JSON.parse(read('package.json'));
   const html=read('src/ui/index.html');
   const analyzer=read('src/analyzer.js');
   const workflow=read('.github/workflows/release.yml');
-  assert.equal(manifest.version,'1.1.0');
-  assert.match(html,/PreSalesGuard 1\.1\.0/);
+  assert.equal(manifest.version,'1.2.0');
+  assert.match(html,/PreSalesX 1\.2\.0/);
   assert.match(analyzer,/appVersion:APP_VERSION/);
   assert.match(manifest.scripts['dist:win'],/--win zip --x64/);
   assert.match(manifest.scripts['dist:mac'],/--mac zip --universal/);
   assert.match(manifest.scripts['dist:win'],/--publish never/);
   assert.match(manifest.scripts['dist:mac'],/--publish never/);
-  assert.match(workflow,/PreSalesGuard-\*-Windows-\*\.zip/);
-  assert.match(workflow,/PreSalesGuard-\*-macOS-\*\.zip/);
+  assert.match(workflow,/PreSalesX-\*-Windows-\*\.zip/);
+  assert.match(workflow,/PreSalesX-\*-macOS-\*\.zip/);
   assert.match(workflow,/gh release create/);
 });
