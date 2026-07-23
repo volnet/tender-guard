@@ -2,6 +2,7 @@ node_modules/
 dist/
 .work/
 *.tenderguard.json
+*.presalesguard.json
 tmp/
 tests-output/
 tests/**/*.db

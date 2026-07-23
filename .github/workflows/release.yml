@@ -22,8 +22,8 @@ jobs:
       - run: npm run dist:win
       - uses: actions/upload-artifact@v4
         with:
-          name: tenderguard-windows
-          path: dist/TenderGuard-*-Windows-*.zip
+          name: presalesguard-windows
+          path: dist/PreSalesGuard-*-Windows-*.zip
           if-no-files-found: error
 
   macos:
@@ -41,8 +41,8 @@ jobs:
       - run: npm run dist:mac
       - uses: actions/upload-artifact@v4
         with:
-          name: tenderguard-macos
-          path: dist/TenderGuard-*-macOS-*.zip
+          name: presalesguard-macos
+          path: dist/PreSalesGuard-*-macOS-*.zip
           if-no-files-found: error
 
   release:
@@ -60,5 +60,5 @@ jobs:
         run: >-
           gh release create "${GITHUB_REF_NAME}"
           release-assets/*.zip
-          --title "TenderGuard ${GITHUB_REF_NAME#v}"
+          --title "PreSalesGuard ${GITHUB_REF_NAME#v}"
           --generate-notes

@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>TenderGuard</title>
+  <title>PreSalesGuard</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="pro.css">
 </head>
 <body>
   <div class="app-shell">
     <header class="titlebar">
-      <div class="brand"><img src="assets/tenderguard-logo.svg" alt=""><div><strong>TenderGuard</strong><span>Document Intelligence Workspace</span></div></div>
+      <div class="brand"><img src="assets/presalesguard-logo.svg" alt=""><div><strong>PreSalesGuard</strong><span>Document Intelligence Workspace</span></div></div>
       <div id="workspaceTitle" class="workspace-title">开始</div>
       <div class="title-actions"><button id="openProject" class="quiet">打开项目</button></div>
     </header>
@@ -22,7 +22,7 @@
     </aside>
     <main class="workbench">
       <section id="start" class="start-view">
-        <div class="welcome-copy"><span class="overline">TENDER DOCUMENT INTELLIGENCE</span><h1>选择工作台</h1><p>批量审查供应商之间的文件关联，或直接维护单个文件的属性。</p></div>
+        <div class="welcome-copy"><span class="overline">PRE-SALES DOCUMENT INTELLIGENCE</span><h1>选择工作台</h1><p>批量审查供应商之间的文件关联，或直接维护单个文件的属性。</p></div>
         <div class="workspace-cards">
           <button class="workspace-card active" data-mode="compare"><span class="card-icon">⌘</span><strong>多家供应商批量审查</strong><p>每个 ZIP 代表一家供应商，检查文件一致性、作者与关键元数据关联。</p><em>至少 2 个 ZIP</em></button>
           <button class="workspace-card" data-mode="files"><span class="card-icon">▤</span><strong>文件属性编辑器</strong><p>打开 Office、PDF、图片或文本文件，查看、修改和清理可编辑属性。</p><em>支持多选文件</em></button>
@@ -33,7 +33,7 @@
         <button id="run" class="primary run-button" disabled>开始供应商审查</button>
       </section>
 
-      <section id="working" class="working-view" hidden><img src="assets/tenderguard-logo.svg" alt=""><div class="spinner"></div><h2>正在本地审查</h2><p id="step">准备文件…</p><progress id="bar" value="0" max="100"></progress><small>所有文件只在本机处理，不会上传。</small></section>
+      <section id="working" class="working-view" hidden><img src="assets/presalesguard-logo.svg" alt=""><div class="spinner"></div><h2>正在本地审查</h2><p id="step">准备文件…</p><progress id="bar" value="0" max="100"></progress><small>所有文件只在本机处理，不会上传。</small></section>
 
       <section id="compareWorkspace" class="workspace-view" hidden>
         <div class="workspace-header"><div><span class="overline">SUPPLIER REVIEW</span><h1 id="compareProjectName"></h1><p id="compareSummary"></p></div><div class="command-bar"><button class="backHome">返回</button><button id="saveProject">保存项目</button><button id="exportPdf">导出 PDF</button><button id="exportXlsx" class="primary">导出操作报告</button></div></div>
@@ -49,7 +49,7 @@
       </section>
     </main>
     <aside id="propertyDrawer" class="property-drawer" hidden><div class="drawer-head"><div><span>属性编辑器</span><strong id="drawerContext"></strong></div><button id="closeDrawer" aria-label="关闭">×</button></div><section id="drawerDetail" class="drawer-body"></section></aside>
-    <footer class="statusbar"><span><i></i> 本地模式</span><span id="statusText">就绪</span><span>TenderGuard 1.0.0</span></footer>
+    <footer class="statusbar"><span><i></i> 本地模式</span><span id="statusText">就绪</span><span>PreSalesGuard 1.1.0</span></footer>
   </div>
   <script src="app.js"></script>
 </body>

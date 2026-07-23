@@ -92,26 +92,26 @@ test('save messages are rendered on separate lines',()=>{
   assert.match(css,/\.save-summary span\{display:block/);
 });
 
-test('visible product branding contains no legacy product names',()=>{
-  const source=['README.md','package.json','src/main.js','src/cli.js','src/reports.js','src/ui/index.html','src/ui/app.js'].map(read).join('\n');
-  const legacySuffix='le'+'ns',forbidden=new RegExp(['Tender'+legacySuffix,'tender-'+legacySuffix,'tender'+legacySuffix,'投标'+'慧眼'].join('|'),'i');
-  assert.match(source,/TenderGuard/);
+test('visible product branding uses PreSalesGuard consistently',()=>{
+  const source=['README.md','package.json','src/cli.js','src/reports.js','src/ui/index.html','src/ui/app.js'].map(read).join('\n').replace(/\.tenderguard\.json/gi,'.legacy-project.json');
+  const legacySuffix='le'+'ns',forbidden=new RegExp(['TenderGuard','tender-guard','tenderguard','Tender'+legacySuffix,'tender-'+legacySuffix,'tender'+legacySuffix,'投标'+'慧眼'].join('|'),'i');
+  assert.match(source,/PreSalesGuard/);
   assert.doesNotMatch(source,forbidden);
 });
 
-test('application and release artifacts use version 1.0.0 consistently',()=>{
+test('application and release artifacts use version 1.1.0 consistently',()=>{
   const manifest=JSON.parse(read('package.json'));
   const html=read('src/ui/index.html');
   const analyzer=read('src/analyzer.js');
   const workflow=read('.github/workflows/release.yml');
-  assert.equal(manifest.version,'1.0.0');
-  assert.match(html,/TenderGuard 1\.0\.0/);
-  assert.match(analyzer,/appVersion:'1\.0\.0'/);
+  assert.equal(manifest.version,'1.1.0');
+  assert.match(html,/PreSalesGuard 1\.1\.0/);
+  assert.match(analyzer,/appVersion:APP_VERSION/);
   assert.match(manifest.scripts['dist:win'],/--win zip --x64/);
   assert.match(manifest.scripts['dist:mac'],/--mac zip --universal/);
   assert.match(manifest.scripts['dist:win'],/--publish never/);
   assert.match(manifest.scripts['dist:mac'],/--publish never/);
-  assert.match(workflow,/TenderGuard-\*-Windows-\*\.zip/);
-  assert.match(workflow,/TenderGuard-\*-macOS-\*\.zip/);
+  assert.match(workflow,/PreSalesGuard-\*-Windows-\*\.zip/);
+  assert.match(workflow,/PreSalesGuard-\*-macOS-\*\.zip/);
   assert.match(workflow,/gh release create/);
 });

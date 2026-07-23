@@ -8,6 +8,7 @@ const yauzl = require('yauzl');
 const { XMLParser } = require('fast-xml-parser');
 const { PDFDocument, PDFArray, PDFRawStream, PDFName, PDFDict, decodePDFRawStream } = require('pdf-lib');
 const { buildAudit } = require('./audit');
+const { version: APP_VERSION } = require('../package.json');
 
 const LIMITS = Object.freeze({ entries: 20000, total: 2 * 1024 ** 3, single: 512 * 1024 ** 2, ratio: 200, depth: 3 });
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_', parseTagValue: false });
@@ -169,5 +170,5 @@ function correlate(submissions, enabled={}) {
   }
   return findings.sort((a,b)=>b.weight-a.weight);
 }
-async function analyzeProject(zipPaths, options={}) { const submissions=[]; for(let i=0;i<zipPaths.length;i++){const p=path.resolve(zipPaths[i]);const archive=await analyzeZip(p,path.basename(p,path.extname(p)),(d,t,n)=>options.progress?.({supplier:i+1,suppliers:zipPaths.length,done:d,total:t,name:n}));submissions.push(archive);} const audit=buildAudit(submissions);return {schemaVersion:3,appVersion:'1.0.0',id:crypto.randomUUID(),name:options.name||`供应商审查 ${new Date().toLocaleDateString('zh-CN')}`,mode:'compare',createdAt:new Date().toISOString(),method:'TenderGuard 离线确定性审查引擎 v1.0',detectionOptions:options.detectionOptions||{},limits:LIMITS,submissions,findings:correlate(submissions,options.detectionOptions),audit,operationLog:[],disclaimer:'TenderGuard 仅发现文件一致性与属性重复线索，不直接作出串标、违法或法律定性结论；结果须结合其他证据人工复核。'}; }
+async function analyzeProject(zipPaths, options={}) { const submissions=[]; for(let i=0;i<zipPaths.length;i++){const p=path.resolve(zipPaths[i]);const archive=await analyzeZip(p,path.basename(p,path.extname(p)),(d,t,n)=>options.progress?.({supplier:i+1,suppliers:zipPaths.length,done:d,total:t,name:n}));submissions.push(archive);} const audit=buildAudit(submissions);return {schemaVersion:3,appVersion:APP_VERSION,brand:'PreSalesGuard',id:crypto.randomUUID(),name:options.name||`供应商审查 ${new Date().toLocaleDateString('zh-CN')}`,mode:'compare',createdAt:new Date().toISOString(),method:`PreSalesGuard 离线确定性审查引擎 v${APP_VERSION}`,detectionOptions:options.detectionOptions||{},limits:LIMITS,submissions,findings:correlate(submissions,options.detectionOptions),audit,operationLog:[],disclaimer:'PreSalesGuard 仅发现文件一致性与属性重复线索，不直接作出串标、违法或法律定性结论；结果须结合其他证据人工复核。'}; }
 module.exports={LIMITS,analyzeProject,analyzeFiles,analyzeZip,analyzeBuffer,correlate,listZip,normalize,sha,propertyGroups,openZip,readEntry,imageExtract};
