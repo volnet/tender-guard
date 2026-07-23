@@ -93,8 +93,12 @@ test('save messages are rendered on separate lines',()=>{
 });
 
 test('visible product branding uses PreSalesGuard consistently',()=>{
-  const source=['README.md','package.json','src/cli.js','src/reports.js','src/ui/index.html','src/ui/app.js'].map(read).join('\n').replace(/\.tenderguard\.json/gi,'.legacy-project.json');
-  const legacySuffix='le'+'ns',forbidden=new RegExp(['TenderGuard','tender-guard','tenderguard','Tender'+legacySuffix,'tender-'+legacySuffix,'tender'+legacySuffix,'投标'+'慧眼'].join('|'),'i');
+  const source=['README.md','package.json','package-lock.json','src/main.js','src/cli.js','src/reports.js','src/ui/index.html','src/ui/app.js','scripts/after-pack.js','scripts/ui-smoke.js','.github/workflows/release.yml'].map(read).join('\n');
+  const forbidden=new RegExp([
+    Buffer.from('54656e6465724775617264','hex').toString(),
+    Buffer.from('74656e6465722d6775617264','hex').toString(),
+    Buffer.from('74656e6465726775617264','hex').toString()
+  ].join('|'),'i');
   assert.match(source,/PreSalesGuard/);
   assert.doesNotMatch(source,forbidden);
 });

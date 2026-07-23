@@ -91,9 +91,9 @@ npm run dist:mac
 
 正式对外分发时应配置对应平台的代码签名与 macOS 公证。
 
-## 项目文件兼容
+## 项目文件
 
-新项目默认保存为 `.presalesguard.json`。程序仍可打开历史版本生成的 `.tenderguard.json` 项目，并在内存中迁移品牌和版本信息；原文件不会在打开时被覆盖。
+项目默认保存为 `.presalesguard.json`。
 
 ## 命令行审查
 
